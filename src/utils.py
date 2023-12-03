@@ -1,3 +1,4 @@
+import numpy as np 
 import pandas as pd
 from pandas import DataFrame 
 
@@ -15,6 +16,8 @@ def convert_dummies(cols: list, df: DataFrame, drop:bool = False) -> DataFrame:
     '''
     for col in cols: 
         dummies = pd.get_dummies(df[col], drop_first = True)
+        # convert to bool
+        dummies = dummies * 1
         df = pd.concat([df, dummies], axis = 1)
     if drop:
         df = df.drop(columns = cols)
@@ -38,7 +41,32 @@ def break_timedelta(s, break_col: str, cutoff):
     
 
 
-def svm_data_transform_pipeline(df: DataFrame, cutoff, cols: list[str], drop:bool = True) -> DataFrame:
+def process_date_cols(df: DataFrame, CUTOFF) -> DataFrame:
+    '''
+    handles datetimes, makes sure no illicit information 
+    is in the training set 
+    '''
+    df = df[pd.to_datetime(df['INSTALLDAT']) <= CUTOFF]
+    df['first_break'] = pd.to_datetime(df['first_break'])
+    df['most_recent_break'] = pd.to_datetime(df['most_recent_break'])
+    df['INSTALLDAT'] = pd.to_datetime(df['INSTALLDAT'])
+
+    df['all_breaks'] = df['all_breaks'].astype(str).apply(lambda s: s.split(","))
+    df['all_breaks'] = df['all_breaks'].apply(lambda s: [pd.to_datetime(t) for t in s]) 
+
+    df['breaks_before_cutoff'] = df['all_breaks'].apply(lambda s: [t for t in s if t <= CUTOFF])
+    df['breaks_after_cutoff'] = df['all_breaks'].apply(lambda s: [t for t in s if t > CUTOFF])
+
+    df['first_break'] = df['first_break'].apply(lambda s: np.where(s <= CUTOFF, s, pd.NaT))
+    df['most_recent_break'] = df['most_recent_break'].apply(lambda s: np.where(s <= CUTOFF, s, pd.NaT))
+
+    df['will_break'] = (df['breaks_after_cutoff'].apply(len) > 0).astype(int)
+
+    return df
+
+
+
+def svm_data_transform_pipeline(df: DataFrame, CUTOFF, cols: list[str]) -> DataFrame:
     # add date related features
     df['installation_year'] = df['INSTALLDAT'].dt.year
     df['n_previous_breaks'] = df['breaks_before_cutoff'].apply(len)
@@ -53,8 +81,8 @@ def svm_data_transform_pipeline(df: DataFrame, cutoff, cols: list[str], drop:boo
     df['installation_year'] = df['installation_year'].astype(int)
 
     # time delta features
-    df['delta_installation_to_first_break'] = df.apply(lambda s: break_timedelta(s, 'first_break', cutoff), axis = 1)
-    df['delta_installation_to_most_recent_break'] = df.apply(lambda s: break_timedelta(s, 'most_recent_break', cutoff), axis = 1)
+    df['delta_installation_to_first_break'] = df.apply(lambda s: break_timedelta(s, 'first_break', CUTOFF), axis = 1)
+    df['delta_installation_to_most_recent_break'] = df.apply(lambda s: break_timedelta(s, 'most_recent_break', CUTOFF), axis = 1)
 
 
     # drop nulls in categorical cols 
@@ -64,5 +92,10 @@ def svm_data_transform_pipeline(df: DataFrame, cutoff, cols: list[str], drop:boo
     df['SUBTYPE'] = df['SUBTYPE'].map({1: 'Distribution Main', 2: 'Transmission Main', 3: 'Hydrant Lead', 
                                        4: 'Raw Water', 5: 'Other', 6: 'Other'})
     
-    df = convert_dummies(cols, df, drop)
+    df = convert_dummies(cols, df)
+
+    to_drop = ['ENABLED', 'FACILITYID', 'LOCATION', 'INSTALLDAT', 'SUBTYPE', 'MATERIAL', 'STATUS', 'PressureSy', 
+               'first_break', 'most_recent_break', 'all_breaks', 'break_status', 'breaks_before_cutoff', 
+               'breaks_after_cutoff']
+    df = df.drop(columns = to_drop)
     return df
