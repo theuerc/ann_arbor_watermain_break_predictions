@@ -21,7 +21,7 @@ def convert_dummies(cols: list, df: DataFrame, drop:bool = False) -> DataFrame:
     return df
 
 
-def break_timedelta(s, break_col: str):
+def break_timedelta(s, break_col: str, cutoff):
     '''
     apply rowwise to a pandas dataframe
     gets number of days between installation and the break 
@@ -31,14 +31,14 @@ def break_timedelta(s, break_col: str):
         break_col: column with information about breaks 
     '''
     if pd.isnull(s[break_col]):
-        return 0
+        return (cutoff - s['INSTALLDAT']).days
     else:
         delta = (s[break_col] - s['INSTALLDAT']).days
         return delta
     
 
 
-def svm_data_transform_pipeline(df: DataFrame, cols: list[str], drop:bool = True) -> DataFrame:
+def svm_data_transform_pipeline(df: DataFrame, cutoff, cols: list[str], drop:bool = True) -> DataFrame:
     # add date related features
     df['installation_year'] = df['INSTALLDAT'].dt.year
     df['n_previous_breaks'] = df['breaks_before_cutoff'].apply(len)
@@ -53,8 +53,8 @@ def svm_data_transform_pipeline(df: DataFrame, cols: list[str], drop:bool = True
     df['installation_year'] = df['installation_year'].astype(int)
 
     # time delta features
-    df['delta_installation_to_first_break'] = df.apply(lambda s: break_timedelta(s, 'first_break'), axis = 1)
-    df['delta_installation_to_most_recent_break'] = df.apply(lambda s: break_timedelta(s, 'most_recent_break'), axis = 1)
+    df['delta_installation_to_first_break'] = df.apply(lambda s: break_timedelta(s, 'first_break', cutoff), axis = 1)
+    df['delta_installation_to_most_recent_break'] = df.apply(lambda s: break_timedelta(s, 'most_recent_break', cutoff), axis = 1)
 
 
     # drop nulls in categorical cols 
