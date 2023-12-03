@@ -45,6 +45,13 @@ def process_date_cols(df: DataFrame, CUTOFF) -> DataFrame:
     '''
     handles datetimes, makes sure no illicit information 
     is in the training set 
+
+    ARGS:
+        df: dataframe with raw data
+        CUTOFF: date cutoff for prediction 
+
+    RETURNS: 
+        new dataframe with dates formatted & additional columns
     '''
     df = df[pd.to_datetime(df['INSTALLDAT']) <= CUTOFF]
     df['first_break'] = pd.to_datetime(df['first_break'])
@@ -66,7 +73,18 @@ def process_date_cols(df: DataFrame, CUTOFF) -> DataFrame:
 
 
 
-def svm_data_transform_pipeline(df: DataFrame, CUTOFF, cols: list[str]) -> DataFrame:
+def svm_data_transform_pipeline(df: DataFrame, CUTOFF, dummy_cols: list[str]) -> DataFrame:
+    '''
+    fun little pipeline for svm dataset (could be used with other models too)
+
+    ARGS:
+        df = dataframe, has already had date columns cleaned / formatted
+        CUTOFF: date cutoff for prediction 
+        dummy_cols: list of columns to generate dummy variables for 
+
+    RETURNS:
+        dataframe that's ready for scaling & prediction 
+    '''
     # add date related features
     df['installation_year'] = df['INSTALLDAT'].dt.year
     df['n_previous_breaks'] = df['breaks_before_cutoff'].apply(len)
@@ -92,7 +110,7 @@ def svm_data_transform_pipeline(df: DataFrame, CUTOFF, cols: list[str]) -> DataF
     df['SUBTYPE'] = df['SUBTYPE'].map({1: 'Distribution Main', 2: 'Transmission Main', 3: 'Hydrant Lead', 
                                        4: 'Raw Water', 5: 'Other', 6: 'Other'})
     
-    df = convert_dummies(cols, df)
+    df = convert_dummies(dummy_cols, df)
 
     to_drop = ['ENABLED', 'FACILITYID', 'LOCATION', 'INSTALLDAT', 'SUBTYPE', 'MATERIAL', 'STATUS', 'PressureSy', 
                'first_break', 'most_recent_break', 'all_breaks', 'break_status', 'breaks_before_cutoff', 
