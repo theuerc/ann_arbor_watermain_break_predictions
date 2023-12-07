@@ -30,13 +30,13 @@ The directory structure of your new project looks like this:
 ├── models             <- Model traning & development
 │   └── 01_baseline    <- Baseline model for comparison 
 │   └── 02_models      <- Scratch notebook for developing models
-│   └── 02_models_cleaned    <- Cleaned up model, random forest 
+│   └── 02_models_cleaned    <- Cleaned up model code, implement final random forest predictor
 │   └── 02_svm         <- SVM model, attempting to replicate results of Syrcause paper
-│   └── top_152        <- 15 pipes that are most likely to break in the next 3 years
+│   └── top_152.csv    <- 15 pipes that are most likely to break in the next 3 years
 │
 ├── notebooks          <- Data mainpulation & exploration 
 │   └── 01_EDA         <- Combining datasets & exploratory analysis
-│   └── 02_train_Test_val_split   <- Split data based on time cutoffs
+│   └── 02_train_test_val_split   <- Split data based on time cutoffs
 │   └── 03_svm_model   <- Ignore, saved to notebooks by accident
 │
 ├── syrcause_public   <- Cloned repository from the Syrcause paper we used as inspiration for our project
