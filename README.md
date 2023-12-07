@@ -3,7 +3,9 @@ Final project for SI 670, Applied Machine Learning, at the University of Michiga
 Group members: Coulton Theuer, Bella Karduck, Haley Johnson
 
 ## Objective
-This project tries to predict if a water main will break in the next 3 years in Ann Arbor, Michigan
+This project tries to predict if a water main will break in the next 3 years in Ann Arbor, Michigan.
+
+These predictions can then potentially be used by the city to mitigate the repair costs, flooding, and property damage associated with water main breaks and help the city better allocate scarce resources for infrastructure improvements. 
 
 ## Data
 Data was provided to us by the City of Ann Arbor and can be found in ```data/raw```
@@ -24,7 +26,7 @@ The directory structure of your new project looks like this:
 ├── data
 │   ├── transformed    <- Transformed data, include training and testing sets 
 │   └── raw            <- Raw data from the City of Ann Arbor
-
+│
 ├── models             <- Model traning & development
 │   └── 01_baseline    <- Baseline model for comparison 
 │   └── 02_models      <- Scratch notebook for developing models
@@ -43,7 +45,7 @@ The directory structure of your new project looks like this:
 ├── src                <- Source code for use in this project.
 │   ├── __init__.py    <- Makes src a Python module
 │   │
-│─ ├── utils          <- Helper functions to process data for train/test files
+│   ├── utils          <- Helper functions to process data for train/test files
 │   
 └──
 ```
